@@ -9,9 +9,11 @@ from pdf_parser import parse_pdf
 from chunks_creator import create_chunks
 from vector_database_creator import create_vector_store
 from create_langchain_pipeline import create_chain
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.vectorstores import FAISS
 
-GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
-genai.configure(api_key=GOOGLE_API_KEY)
+
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 # Custom LangChain wrapper for Gemini due to protobuf issue
 class GeminiLLM(LLM):
@@ -72,8 +74,15 @@ if process_pdf and uploaded_pdf is not None:
     # Create Embeddings and Vector Store
     print("Creating vector store...")
     loader.warning("Creating Vector store...")
-    vector_store = create_vector_store(all_splits)
-    
+    # vector_store = create_vector_store(all_splits)
+    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
+    create_vector_store(all_splits)
+    vector_store = FAISS.load_local(
+        "faiss_index", 
+        embeddings, 
+        allow_dangerous_deserialization=True
+    )
+
     # Create Gemini LLM instance
     llm = GeminiLLM()
 
