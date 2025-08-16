@@ -2,7 +2,8 @@ streamlit
 python-dotenv
 langchain
 langchain-community
-langchain-chroma
+faiss-cpu
+sentence-transformers
 langchain-huggingface
 pypdf
 google-generativeai
