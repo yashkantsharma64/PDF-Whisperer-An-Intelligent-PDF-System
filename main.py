@@ -1,3 +1,4 @@
+# import necessary libraries
 from langchain.llms.base import LLM
 from langchain.prompts import PromptTemplate
 from typing import Optional, List
@@ -12,7 +13,7 @@ from create_langchain_pipeline import create_chain
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 
-
+# Get the Gemini API Key
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 # Custom LangChain wrapper for Gemini due to protobuf issue
@@ -53,13 +54,19 @@ combine_prompt_template = PromptTemplate(
     input_variables=["question", "summaries"]
 )
 
+# set up streallit app
 load_dotenv()
+# Set the title of the project
 st.title("PDF Whisperer - An Intelligent PDF System")
 loader = st.empty()
+# query placehlder
 query = st.text_input("Enter your question about the PDF document:")
 st.write("Answer:")
+# Upload PDF placeholder
 st.sidebar.title("Upload PDF")
+# PDF upload button
 uploaded_pdf = st.sidebar.file_uploader("Select file", type=["pdf"], key="pdf_uploader")
+# ask pdf question button
 process_pdf = st.sidebar.button("Ask PDF")
 
 if process_pdf and uploaded_pdf is not None:
@@ -77,10 +84,11 @@ if process_pdf and uploaded_pdf is not None:
     # vector_store = create_vector_store(all_splits)
     embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
     create_vector_store(all_splits)
+    # Load the vector database from already created vector store
     vector_store = FAISS.load_local(
         "faiss_index", 
-        embeddings, 
-        allow_dangerous_deserialization=True
+        embeddings, #pass embeddings
+        allow_dangerous_deserialization=True # to allow deserialization of untrusted data
     )
 
     # Create Gemini LLM instance
@@ -95,8 +103,10 @@ if process_pdf and uploaded_pdf is not None:
     if query:
         # chain.max_tokens_limit = 800
         print("Running query...")
+        # use invoke mwthod to run the chain
         result = chain.invoke({"question": query})
         loader.success("Query answered successfully!...✅")
+        # show the response
         st.write(result["answer"])
     else:
         st.write("Please enter a question to get an answer from the PDF document.")
